@@ -47,6 +47,42 @@ requests and their respective handlers.
 The executable program can accept one command line argument `--port` which is the port that the server is running.
 If no port is given then the default 8080 is used.
 
+
+Unit tests
+------------
+Multiple unit tests are written for each of the method defined in the packages [stringutil](./stringutil) and [translator](./translator).
+
+The HTTP handlers are tested in a different way.
+Instead of using the suggested methods (e.g. [testing-http-handlers-go](https://blog.questionable.services/article/testing-http-handlers-go/)),
+I've created a special method, and a special structure that can test any handler functionality by provided by the `TestHandlerStruct`.
+
+The structure is defined like this:
+```go
+type TestHandlerStruct struct {
+	handler            func(w http.ResponseWriter, r *http.Request) // The handler you want to test
+	setup              func()                                       // init setup function
+	request            map[string]string                            // the request body of the request
+	contentType        string                                       // HTTP request content type
+	expectedHTTPStatus int                                          // HTTP expected status
+	expectedBody       string                                       // the expected response's body
+}
+```
+
+The `testHandler()` method definition is the following:
+```
+func testHandler(t *testing.T, test TestHandlerStruct)
+```
+It works as follows:
+1. Does a preparation work by the given setup() method.
+2. Creates a http request with the given content type and request body.
+3. Then it calls the given handler to execute the request.
+4. After the request is finished it checks the response with the expectedHTTPStatus and the expectedBody.
+
+This methods provide with some kind of an elegant solution to test multiple HTTP handler in a convinient way.
+
+It's definitely not perfect but can be further improved in the future.
+
+
 Build & Run
 ----------------------
 A [Makefile](Makefile) has been created in order to make the building of the program easier.
